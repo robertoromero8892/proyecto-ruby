@@ -67,6 +67,8 @@ end
 
 class Uniform < Strategy
 
+	attr_accessor :list
+
 	# constructor de la clase
 	def initialize list
 	# si la lista está vacía muestra error
@@ -78,62 +80,80 @@ class Uniform < Strategy
            	@list = list.compact.uniq
 		end
 	end
-	
-	# para poder trabajar con la lista, MOSCA falta el atrr_algo
-	def list
-		@list
-	end
 
 	# devuelve el proximo movimiento
 	def next(m)
 		# gen es el generador de aleatoriedad
 		gen 	= Random.new(SEED)
 		# posicion del elemento a seleccionar
-		index 	= gen.rand(self.list.size)
-		# movimiento resultante
-		move	= self.list[index]
-		return move 
+		ran 	= gen.rand(100)
+		prob 	= 100/self.list.size
+		i 	= 1
+		# ciclo para definir el elemento seleccionado
+		while ran > prob*i
+			i+=1
+		end
+		# nuevo movimiento
+		move 	= self.list[i-1] 
 	end
 
-	# muestra el nombre de la estragia y sus atributos
+	# muestra el nombre de la estrategia y su lista de 
+	# movimientos posibles
 	def to_s
-		self.class.name + " " + self.list.to_s
+		aux = ""
+		self.list.each {|e| aux = aux + e.to_s + " "}
+		self.class.name + " [ " + aux + "] "
 	end
 
 	# vuelve la estrategia al estado inicial
+	# no tiene accion para esta estrategia
 	def reset
-		# si vamos a seetear el estado inicial, aqui lo seteamos de nuevo
 	end
 
 end
 
 class Biased < Strategy
-
+	
+	attr_reader :hash
 	# constructor de la clase
 	def initialize hash
 		# si el has esta vacio
 		if hash.empty?
 			raise 'Empty hash'
 		else
-			# uniq puede recibir un bloque y así elimina claves repetidas
-			@hash = hash.uniq { |x| x.key}
+			# to_h vuelve el constructor un hash y elimina
+			# duplicados
+			@hash = hash.to_h
 		end
 	end
 
 	# devuelve el proximo movimiento
 	def next(m)
 	end
-	def to_s
+	def make_string(k,v)
+		k.to_s + " => " + v.to_s
 	end
+
+	# muestra el nombre d ela estrategia y el hash con los
+	# movimientos y sus probabilidades		
+	def to_s
+		aux = ""
+		self.hash.each {|k,v| aux = aux + make_string(k,v) + " "}
+		self.class.name + " { " + aux + "}" 
+	end
+
+	# vuelve la estrategia a su estado inicial
+	# no tiene accion en esta estrategia
 	def reset
 	end
-	# la clave son objetos de clase Movement, y los valores son 
-    # enteros que representan las probabilidades de cada clave
+
 end
 
 class Mirror < Strategy
-
-	# ATRR TAMBIEN
+	
+	attr_accessor 	:other_moves
+	attr_reader 	:constructor
+	
 	# constructor de la clase
 	def initialize (constructor, other_moves = [])
 		@constructor = constructor
@@ -143,20 +163,27 @@ class Mirror < Strategy
 
 	# devuelve el proximo elemento
 	def next(m)
-		if other_moves.empty?
+		if self.other_moves.empty?
 			mov = self.constructor
 		else
-			mov = other_moves.last
+			mov = self.other_moves.last
 		end
-		other_moves.insert(m)
+		# agrega el movimiento del contrincante a la lista de
+		# movimientos anteriores
+		self.other_moves << m
 		return mov
 	end
+	
+	# muestra el nombre de la estrategia y su constructor
 	def to_s
+		self.class.name + " (" + self.constructor.class.name + ")" 
 	end
+	
+	# vuelve la estrategia al estado inicial
 	def reset
+		self.other_moves = []
 	end
-	#la primera jugada se setea al construirse, las demas son la
-	# jugada anterior del contrincante
+
 end
 
 

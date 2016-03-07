@@ -89,26 +89,25 @@ class Uniform < Strategy
 		# si la lista debe mantenerse igual
 		list_aux = self.list.shuffle
 		# nuevo movimiento
-		move = list_aux[ran] 
+		move = Object.const_get(list_aux[ran]).new 
 	end
 
 	# muestra el nombre de la estrategia y su lista de 
 	# movimientos posibles
 	def to_s
-		aux = ""
-		self.list.each {|e| aux = aux + e.to_s + " "}
-		self.class.name + " [ " + aux + "] "
+		self.class.name.to_sym + " " + self.list.to_s
 	end
 
 	# vuelve la estrategia al estado inicial
 	# no tiene accion para esta estrategia
 	def reset
+		self.gen = Random.new(SEED)
 	end
 
 end
 
 class Biased < Strategy
-	# le pongo el generador como atributo???
+
 	attr_reader :hash, :gen
 	# constructor de la clase
 	def initialize hash
@@ -136,28 +135,22 @@ class Biased < Strategy
 		# repetidos segun su probabilidad asociada
 		self.hash.each {|k,v| aux = (aux << k)*v}
 		# se barajea el arreglo
-		aux = aux.shuflle
+		aux = aux.shuffle
 		# se escoge el nuevo movimiento
-		move = aux[ran]
-	end
-	
-	# funcion auxiliar para to_s
-	private
-	def make_string(k,v)
-		k.to_s + " => " + v.to_s
+		move = Object.const_get(aux[ran]).new
 	end
 
 	# muestra el nombre d ela estrategia y el hash con los
 	# movimientos y sus probabilidades		
 	def to_s
-		aux = ""
-		self.hash.each {|k,v| aux = aux + make_string(k,v) + " "}
-		self.class.name + " { " + aux + "}" 
+		self.class.name.to_sym + " " + self.hash.to_s 
 	end
 
 	# vuelve la estrategia a su estado inicial
 	# no tiene accion en esta estrategia
+	# RESEATEAR EL SEED????
 	def reset
+		self.gen = Random.new(SEED)
 	end
 
 end
@@ -184,12 +177,12 @@ class Mirror < Strategy
 		# agrega el movimiento del contrincante a la lista de
 		# movimientos anteriores
 		self.other_moves << m
-		return mov
+		return Object.const_get(mov.to_s).new
 	end
 	
 	# muestra el nombre de la estrategia y su constructor
 	def to_s
-		self.class.name + " (" + self.constructor.class.name + ")" 
+		self.class.name.to_sym  + " (" + self.constructor.to_s + ")" 
 	end
 	
 	# vuelve la estrategia al estado inicial
@@ -213,9 +206,31 @@ class Smart < Strategy
 		@gen 	= Random.new(SEED)
 	end
 	
+
+	def move_ranges ran
+		 case
+            when in_r(0, self.ps, ran)
+                then move = :Scissors
+            when in_r(self.ps, self.ps + self.rs, ran)
+                then move = :Paper
+            when in_r(self.ps + self.rs, self.ps + self.rs + self.ss, ran)
+                then move = :Rock
+        end 
+		return move
+	end
+
 	# metodo auxiliar para la funcion next	
 	def in_r(u,l,e)
 		(u..l).member?(e)
+	end
+
+	def insert_move(m)
+		aux = m.to_s
+		case 
+			when aux == "Rock"		then self.rs = self.rs + 1
+			when aux == "Paper" 	then self.ps = self.ps + 1
+			when aux == "Scissors"	then self.ss = self.ss + 1
+		end
 	end
 
 	#devuelve el proximo movimiento
@@ -226,27 +241,26 @@ class Smart < Strategy
 		else 
 			ran = self.gen.rand(aux)
 		end
-		case
-			when in_r(0, self.ps, ran) 
-				then move = Scissors.new
-			when in_r(self.ps, self.ps + self.rs, ran) 
-				then move = Paper.new
-			when in_r(self.ps + self.rs, self.ps + self.rs + self.ss, ran) 
-				then move = Rock.new
-		end
+		insert_move(m)
+		move = move_ranges(ran)
+		return Object.const_get(move.to_s).new
 	end
 
 	# muestra el nombre de la estrategia y los contadores de las
 	# jugadas del contrincante
 	def to_s
+		self.class.name.to_sym + " (Rocks: " + self.rs.to_s + " Papers: " + 
+		self.ps.to_s + " Scissors: " + self.ss.to_s + ")" 
 	end
 	
 	# vuelve el juego a su estado inicial
 	# en este caso vuelve a cero los contadores de movimientos
+	# SETEAR DE NUEVO LA SEMILLA?
 	def reset
-		@rs = 0
-		@ps = 0
-		@ss = 0
+		self.rs 	= 0
+		self.ps 	= 0
+		self.ss 	= 0
+		self.gen 	= Random.new(SEED)
 	end
 
 end

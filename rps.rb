@@ -67,10 +67,11 @@ end
 
 class Uniform < Strategy
 
-	attr_accessor :list
-
+	attr_accessor 	:list
+	attr_reader 	:gen
 	# constructor de la clase
 	def initialize list
+		@gen = Random.new(SEED)
 	# si la lista está vacía muestra error
 		if list.empty?
 			raise 'Empty list'
@@ -83,18 +84,12 @@ class Uniform < Strategy
 
 	# devuelve el proximo movimiento
 	def next(m)
-		# gen es el generador de aleatoriedad
-		gen 	= Random.new(SEED)
 		# posicion del elemento a seleccionar
-		ran 	= gen.rand(100)
-		prob 	= 100/self.list.size
-		i 	= 1
-		# ciclo para definir el elemento seleccionado
-		while ran > prob*i
-			i+=1
-		end
+		ran 	= self.gen.rand(self.list.size)
+		# si la lista debe mantenerse igual
+		list_aux = self.list.shuffle
 		# nuevo movimiento
-		move 	= self.list[i-1] 
+		move = list_aux[ran] 
 	end
 
 	# muestra el nombre de la estrategia y su lista de 
@@ -113,10 +108,11 @@ class Uniform < Strategy
 end
 
 class Biased < Strategy
-	
-	attr_reader :hash
+	# le pongo el generador como atributo???
+	attr_reader :hash, :gen
 	# constructor de la clase
 	def initialize hash
+		@gen = Random.new(SEED)
 		# si el has esta vacio
 		if hash.empty?
 			raise 'Empty hash'
@@ -128,8 +124,25 @@ class Biased < Strategy
 	end
 
 	# devuelve el proximo movimiento
+	# como usar range aqui?
 	def next(m)
+		sum = 0
+		# calcula la suma de las probabilidades
+		self.hash.values.each {|v| sum = sum +v}
+		# genera un numero aleatorio entre 0 y sum
+		ran = self.gen.rand(sum)
+		aux = []
+		# genera un arreglo con los movimientos posibles
+		# repetidos segun su probabilidad asociada
+		self.hash.each {|k,v| aux = (aux << k)*v}
+		# se barajea el arreglo
+		aux = aux.shuflle
+		# se escoge el nuevo movimiento
+		move = aux[ran]
 	end
+	
+	# funcion auxiliar para to_s
+	private
 	def make_string(k,v)
 		k.to_s + " => " + v.to_s
 	end

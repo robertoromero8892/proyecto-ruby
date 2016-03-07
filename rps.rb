@@ -201,22 +201,54 @@ end
 
 
 class Smart < Strategy
-	def initialize x
-		super x
+	
+	attr_accessor 	:rs, :ss, :ps
+	attr_reader 	:gen	
+	
+	# cosntructor de la clase
+	def initialize(r = 0, p = 0, s = 0)
+		@rs		= r
+		@ss 	= s
+		@ps		= p
+		@gen 	= Random.new(SEED)
 	end
-	def next(m)
-	end
-	def to_s
-	end
-	def reset
+	
+	# metodo auxiliar para la funcion next	
+	def in_r(u,l,e)
+		(u..l).member?(e)
 	end
 
-        #analiza las frecuencias de las jugadas del oponente
-        #debe recordad las jugadas aneriores y decidir segun:
-                # P,R,S la cantidad de rock, paper, scissors
-                # generar un numero al azar n entre 0 y P+R+S-1
-                #sera scissors  si n e [0,p), paper si n e [p,p+r)
-                # y rock si n e [p+r, p+r+s)
+	#devuelve el proximo movimiento
+	def next(m)
+		aux = self.rs + self.ss + self.ps
+		if aux == 0
+			ran = 0
+		else 
+			ran = self.gen.rand(aux)
+		end
+		case
+			when in_r(0, self.ps, ran) 
+				then move = Scissors.new
+			when in_r(self.ps, self.ps + self.rs, ran) 
+				then move = Paper.new
+			when in_r(self.ps + self.rs, self.ps + self.rs + self.ss, ran) 
+				then move = Rock.new
+		end
+	end
+
+	# muestra el nombre de la estrategia y los contadores de las
+	# jugadas del contrincante
+	def to_s
+	end
+	
+	# vuelve el juego a su estado inicial
+	# en este caso vuelve a cero los contadores de movimientos
+	def reset
+		@rs = 0
+		@ps = 0
+		@ss = 0
+	end
+
 end
 
 

@@ -148,7 +148,6 @@ class Biased < Strategy
 
 	# vuelve la estrategia a su estado inicial
 	# no tiene accion en esta estrategia
-	# RESEATEAR EL SEED????
 	def reset
 		self.gen = Random.new(SEED)
 	end
@@ -255,7 +254,6 @@ class Smart < Strategy
 	
 	# vuelve el juego a su estado inicial
 	# en este caso vuelve a cero los contadores de movimientos
-	# SETEAR DE NUEVO LA SEMILLA?
 	def reset
 		self.rs 	= 0
 		self.ps 	= 0
@@ -265,10 +263,67 @@ class Smart < Strategy
 
 end
 
+class Player
+
+	attr_reader :name, :s
+	attr_accessor :score
+
+	def initialize (name, s)
+		@name	= name	# nombre del jugador
+		@s		= s		# estrategia del jugador
+		@score	= 0		# puntos del jugador
+	end
+end
 
 #### clase juego
 class Match
-	def initialize(args)	
+
+	attr_reader :hash, :p1, :p2
+	attr_accessor :rp # partidas jugadas
+	
+	#verificar que sean solo dos elementos, verificar que 
+	# values sean estategias
+	def initialize hash
+		hash.delete_if {|k,v| v.class.superclass!= Strategy}
+		if hash.size != 2  
+			raise "error, incorrect hash"
+		else
+			@hash = hash
+			@p1 = Player.new(hash.keys[0], hash.values[0])
+			@p2 = Player.new(hash.keys[1], hash.values[1])
+			@rp	= 0
+		end
+	end
+
+	def score_result(m1, m2)
+		result = m1.score(m2)
+		
+	end
+
+	# hacerlo bonito jajaja
+	def game
+		m1 = self.p1.s.next(self)
+		m2 = self.p2.s.next(m1)
+		t = m1.score(m2)
+		self.p1.score = self.p1.score + t[0]
+		self.p2.score = self.p2.score + t[1]
+		m1 = self.p1.s.next(m2)
+		
+	end
+	
+	# hacer que imprima el resutado :)	
+	def rounds(n)
+		# n veces la funcion que hace que jueguen 
+		n.times do
+			game
+		end
+	end
+	
+	def upto(n)
+		# hasta que el puntaje llegue a n
 	end
 end
+
+
+
 

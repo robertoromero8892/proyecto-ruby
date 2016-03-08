@@ -266,12 +266,17 @@ end
 class Player
 
 	attr_reader :name, :s
-	attr_accessor :score
+	attr_accessor :score, :move
 
 	def initialize (name, s)
 		@name	= name	# nombre del jugador
 		@s		= s		# estrategia del jugador
 		@score	= 0		# puntos del jugador
+		@move	= self.first_move
+	end
+	
+	def first_move
+		self.s.next(self)
 	end
 end
 
@@ -294,33 +299,61 @@ class Match
 			@rp	= 0
 		end
 	end
-
-	def score_result(m1, m2)
-		result = m1.score(m2)
-		
-	end
-
-	# hacerlo bonito jajaja
-	def game
-		m1 = self.p1.s.next(self)
-		m2 = self.p2.s.next(m1)
-		t = m1.score(m2)
-		self.p1.score = self.p1.score + t[0]
-		self.p2.score = self.p2.score + t[1]
-		m1 = self.p1.s.next(m2)
-		
-	end
 	
-	# hacer que imprima el resutado :)	
+	# mejorar el puts
+	# crear un hash de los resultado e imprimir ese hash
 	def rounds(n)
-		# n veces la funcion que hace que jueguen 
+		# se elije el primer movimiento del jugador 1
+		m1 = self.p1.s.next(self)
+		# se juega n veces
 		n.times do
-			game
+			#game
+			m2 = self.p2.s.next(m1)
+        # se comparan los resultados y se guarda en t
+	        t = m1.score(m2)
+        # se asignan los resultados
+    	    self.p1.score = self.p1.score + t[0]
+        	self.p2.score = self.p2.score + t[1]
+        # se aumenta el numero de rondas jugadas
+     		self.rp = self.rp + 1
+        # se genera un nuevo movimiento del jugador 2
+      		m1 = self.p1.s.next(m2)
+
 		end
+		# imprime el resultado en pantalla
+		return "{ :" + self.p1.name.to_s + " => " + self.p1.score.to_s + ", :" +
+			self.p2.name.to_s + " => " + self.p2.score.to_s + ", " +
+			":Rounds => " + self.rp.to_s + " }"
 	end
 	
 	def upto(n)
+		# se elige el primer movimiento del jugador 1
+		m1 = self.p1.s.next(self)
+		# se juega hasta que algun jugador tenga n puntos
+		while (self.p1.score < n && self.p2.score < n) do
+			#game(m)
+			m2 = self.p2.s.next(m1)
+        # se comparan los resultados y se guarda en t
+	        t = m1.score(m2)
+        # se asignan los resultados
+    	    self.p1.score = self.p1.score + t[0]
+        	self.p2.score = self.p2.score + t[1]
+        # se aumenta el numero de rondas jugadas
+        	self.rp = self.rp + 1
+        # se genera un nuevo movimiento del jugador 2
+        	m1 = self.p1.s.next(m2)
+
+		end
+		return "{ :" + self.p1.name.to_s + " => " + self.p1.score.to_s + ", :" +
+            self.p2.name.to_s + " => " + self.p2.score.to_s + ", " +
+            ":Rounds => " + self.rp.to_s + " }"
 		# hasta que el puntaje llegue a n
+	end
+
+	def reset
+		self.p1.score = 0
+		self.p2.score = 0
+		self.rp = 0
 	end
 end
 

@@ -27,7 +27,7 @@ class Movement
 	# Devuelve una excepción
 
 	def score m
-		raise "Error: Movement has no method score()"
+		raise "Error: La clase 'Movement' no posee un metodo 'score'"
 	end
 
 end
@@ -176,7 +176,7 @@ class Strategy
 	# * no puede ser inicializada
 
 	def initialize
-		raise 'Error: Strategy is an abstract class'
+		raise "Error: La clase 'Strategy' es una clase abstracta"
 	end
 	
 	# Genera una excepción
@@ -186,7 +186,7 @@ class Strategy
 	# * puede generarlos
 
 	def next(m)
-		raise 'Error: The class Strategy have no method "next"'
+		raise "Error: La clase 'Strategy' no posee un metodo llamado 'next'"
 	end 
 
 	# Muestra en pantalla el nombre del invocante
@@ -219,7 +219,7 @@ class Uniform < Strategy
 	def initialize list
 		@gen = Random.new(SEED)
 		if list.empty?
-			raise 'Error: Empty list'
+			raise "Error: El argumento para 'new' debe ser una lista no vacía"
 		else	
 			@list = list.uniq
 		end
@@ -278,7 +278,8 @@ class Biased < Strategy
 	def initialize hash
 		@gen = Random.new(SEED)
 		if hash.empty?
-			raise 'Error: Empty hash'
+			raise "Error: El argumento para 'new' debe ser un diccionario 
+				no vacío "
 		else
 			@hash = hash.to_h
 		end
@@ -298,7 +299,6 @@ class Biased < Strategy
 		sum = 0
 		self.hash.values.each {|v| sum = sum +v}
 		ran = self.gen.rand(sum)
-		puts ran
 		move = p_ranges(ran)
 		return Object.const_get(move).new
 	end
@@ -495,7 +495,7 @@ class Smart < Strategy
 		self.rs 	= 0
 		self.ps 	= 0
 		self.ss 	= 0
-		self.gen 	= Random.new(SEED)
+		self.gen	= Random.new(SEED)
 	end
 
 end
@@ -523,7 +523,8 @@ class Match
 	def initialize hash
 		hash.delete_if {|k,v| v.class.superclass!= Strategy}
 		if hash.size != 2  
-			raise "Error: Need just two players and strategies"
+			raise "Error: El argumento para 'new' debe ser un diccionario de
+				dos elementos cuyos valores deben ser de la clase 'Strategy'"
 		else
 			@hash	= hash
 			@s1		= hash.values[0]
@@ -581,9 +582,7 @@ class Match
 	# * y puntos
 
 	def game(m)
-        puts m
         m2 = self.s2.next(m)
-        puts m2
         self.scores = sum_array(self.scores, m.score(m2))
         self.rp = self.rp + 1
         m = self.s1.next(m2)

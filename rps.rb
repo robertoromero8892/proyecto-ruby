@@ -221,7 +221,7 @@ class Uniform < Strategy
 		if list.empty?
 			raise 'Error: Empty list'
 		else	
-           	@list = list.uniq
+			@list = list.uniq
 		end
 	end
 
@@ -417,29 +417,27 @@ class Smart < Strategy
 	# ss: cantidad de movimientos tijeras jugados
 	# por el contrincante
 	# ps: cantidad de movimientos papel jugados 
-	# por el contrincante	
-	attr_accessor 	:rs, :ss, :ps
-
-	# generadod de aleatoriedad
-	attr_accessor 	:gen
+	# por el contrincante
+	# gen: generadod de aleatoriedad
+	attr_accessor 	:rs, :ss, :ps, :gen
 	
 	# Inicializa el generador de aleatoridad y
 	# los acumuladores de movimientos del jugador
 	# contrincante
 
 	def initialize(r = 0, p = 0, s = 0)
-		@rs	= r
-		@ss 	= s
-		@ps	= p
-		@gen 	= Random.new(SEED)
+		@rs		= r
+		@ss		= s
+		@ps		= p
+		@gen	= Random.new(SEED)
 	end
 	
 	# Determina el próximo movimiento del jugador
 	#
 	# * suma todos los acumuladores de movimientos del
 	# * contrincante y si es distinto de cero se genera
-# * un númer  aleatorio entre cero y la suma,
-# * se aumenta el acumulador correspondiente al movimiento
+	# * un númer  aleatorio entre cero y la suma,
+	# * se aumenta el acumulador correspondiente al movimiento
 	# * del contrincante, se determina el rango al que pertenece 
 	# * el número, y se selecciona el movimiento según
 	# * el rango asociado
@@ -461,26 +459,26 @@ class Smart < Strategy
 	def move_ranges ran
 		if (0..self.ps).member?(ran)
 			move = :Scissors
-        elsif (self.ps..(self.ps + self.rs)).member?(ran)
+		elsif (self.ps..(self.ps + self.rs)).member?(ran)
 			move = :Paper
-       	else
+		else
 			move = :Rock
-       	end
+		end
 		return move
-    end
+	end
 
     # Aumenta el contador de movimientos del contrincante
 	
-    def insert_move(m)
-        aux = m.to_s
-        if aux == "Rock"      
+	def insert_move(m)
+		aux = m.to_s
+		if aux == "Rock"      
 			self.rs += 1
-       	elsif aux == "Paper"     
+		elsif aux == "Paper"     
 			self.ps += 1
-       	else
+		else
 			self.ss += 1
-        end
-    end
+		end
+	end
 
 	# Muestra en pantalla el nombre de la estrategia y sus
 	# parámetros de configuración
@@ -527,11 +525,11 @@ class Match
 		if hash.size != 2  
 			raise "Error: Need just two players and strategies"
 		else
-			@hash 	= hash
+			@hash	= hash
 			@s1		= hash.values[0]
-			@s2 	= hash.values[1]
+			@s2		= hash.values[1]
 			@rp		= 0
-			@scores = [0,0]
+			@scores	= [0,0]
 		end
 	end
 	
@@ -565,15 +563,6 @@ class Match
     # * movimientos, se suman los puntos obtenidos a cada
     # * jugador, se aumenta el contador de rondas y se elige 
     # el proximo movimiento del jugador 1.
-
-	def game(m)
-		puts m
-		m2 = self.s2.next(m)
-		puts m2
-		self.scores = sum_array(self.scores, m.score(m2))
-		self.rp = self.rp + 1
-		m = self.s1.next(m2)
-	end
 	
 	def upto(n)
 		m1 = self.s1.next(nil)
@@ -585,6 +574,22 @@ class Match
 		return Hash[names.zip(numbers)]
 	end
 	
+	# Ciclo del juego
+	#
+	# * determina los movimientos de los jugadres
+	# * y aunmernta los contadores de rondas y
+	# * y puntos
+
+	def game(m)
+        puts m
+        m2 = self.s2.next(m)
+        puts m2
+        self.scores = sum_array(self.scores, m.score(m2))
+        self.rp = self.rp + 1
+        m = self.s1.next(m2)
+    end
+
+		
 	# Devuelve la suma de dos arreglos de dos elementos
 
 	def sum_array(a1,a2)
@@ -599,8 +604,8 @@ class Match
 	# * así como las partidas jugadas
 
 	def reset
-		self.scores 	= [0,0]
-		self.rp 	= 0
+		self.scores	= [0,0]
+		self.rp		= 0
 	end
 
 end

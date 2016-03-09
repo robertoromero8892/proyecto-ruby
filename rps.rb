@@ -289,20 +289,39 @@ class Biased < Strategy
 	# * se calcula la suma de las probabilidades de
 	# * los movimientos y se genera un numero 
 	# * aleatorio entre cero y esta suma, luego se
-	# * genera un arreglo con los movimientos posibles
-	# * donde cada uno aparece tantas veces como su 
-	# * probabilidad, se barajea este arreglo y se
-	# * selecciona el elemento asociado a la posición
-	# * del número aleatorio
+	# * determinana los rangos de cada movimiento
+	# * según su probabilidad y el movimiento 
+	# * resultante será el correspondiente al 
+	# * rango donde el numero aleatorio se encuentra
 
 	def next(m)
 		sum = 0
 		self.hash.values.each {|v| sum = sum +v}
 		ran = self.gen.rand(sum)
-		aux = []
-		self.hash.each {|k,v| aux = (aux << k)*v}
-		aux = aux.shuffle
-		move = Object.const_get(aux[ran]).new
+		puts ran
+		move = p_ranges(ran)
+		return Object.const_get(move).new
+	end
+
+	# Determina el movimiento según el rango
+	# de probabilidades
+	#
+	# * se divide el intervalo de cero a la suma
+	# * y según cada probabilidad se construyen
+	# * subintervalos que determinan el nuevo
+	# * movimiento
+		
+	def p_ranges(ran)
+		l1 = self.hash.values[0]
+		l2 = self.hash.values[1]
+		l3 = self.hash.values[2]
+		if (0..l1).member?(ran)
+			move = hash.keys[0]
+		elsif (l1..(l1 +l2)).member?(ran)
+			move = hash.keys[1]
+		else
+			move = hash.keys[2]
+		end
 	end
 
 	# Muestra en pantalla el nombre simbólico de la 
@@ -356,12 +375,14 @@ class Mirror < Strategy
 	# * devuelve el movimiento inicial
 
 	def next(m)
+		if m == nil
+			m = self.constructor
+		end
 		if self.other_moves.empty?
 			mov = self.constructor
 		else
 			mov = self.other_moves.last
 		end
-		puts m
 		self.other_moves << m
 		return Object.const_get(mov.to_s.to_sym).new
 	end
@@ -400,7 +421,7 @@ class Smart < Strategy
 	attr_accessor 	:rs, :ss, :ps
 
 	# generadod de aleatoriedad
-	attr_reader 	:gen	
+	attr_accessor 	:gen
 	
 	# Inicializa el generador de aleatoridad y
 	# los acumuladores de movimientos del jugador
@@ -417,46 +438,47 @@ class Smart < Strategy
 	#
 	# * suma todos los acumuladores de movimientos del
 	# * contrincante y si es distinto de cero se genera
-	# * un número aleatorio entre cero y la suma,
-	# * se aumenta el acumulador correspondiente al movimiento
+# * un númer  aleatorio entre cero y la suma,
+# * se aumenta el acumulador correspondiente al movimiento
 	# * del contrincante, se determina el rango al que pertenece 
 	# * el número, y se selecciona el movimiento según
 	# * el rango asociado
 
 	def next(m)
 		aux = self.rs + self.ss + self.ps
-		if aux == 0
-			ran = 0
+		if aux < 1
+			move = :Scissors
 		else 
 			ran = self.gen.rand(aux)
+			move = move_ranges(ran)
 		end
 		insert_move(m)
-		move = move_ranges(ran)
 		return Object.const_get(move.to_s).new
 	end
 
 	# Determina el movimiento según el rango que corresponda
 	
 	def move_ranges ran
-         case
-            when (0..self.ps).member?(ran)
-                then move = :Scissors
-            when (self.ps..(self.ps + self.rs)).member?(ran)
-                then move = :Paper
-            when ((self.ps + self.rs)..(self.ps + self.rs + self.ss)).member?(ran)
-                then move = :Rock
-        end
-        return move
+		if (0..self.ps).member?(ran)
+			move = :Scissors
+        elsif (self.ps..(self.ps + self.rs)).member?(ran)
+			move = :Paper
+       	else
+			move = :Rock
+       	end
+		return move
     end
 
     # Aumenta el contador de movimientos del contrincante
-
+	
     def insert_move(m)
         aux = m.to_s
-        case
-            when aux == "Rock"      then self.rs = self.rs + 1
-            when aux == "Paper"     then self.ps = self.ps + 1
-            when aux == "Scissors"  then self.ss = self.ss + 1
+        if aux == "Rock"      
+			self.rs += 1
+       	elsif aux == "Paper"     
+			self.ps += 1
+       	else
+			self.ss += 1
         end
     end
 
@@ -506,9 +528,9 @@ class Match
 			raise "Error: Need just two players and strategies"
 		else
 			@hash 	= hash
-			@s1	= hash.values[0]
+			@s1		= hash.values[0]
 			@s2 	= hash.values[1]
-			@rp	= 0
+			@rp		= 0
 			@scores = [0,0]
 		end
 	end
@@ -525,14 +547,10 @@ class Match
 	# el proximo movimiento del jugador 1.
 
 	def rounds(n)
-		m1 = self.s1.next(self)
+		m1 = self.s1.next(nil)
 		n.times do
-			m2 = self.s2.next(m1)
-			self.scores = sum_array(self.scores, m1.score(m2))
-			self.rp = self.rp + 1
-			m1 = self.s1.next(m2)
+			m1 = game(m1)
 		end
-		# imprime el resultado en pantalla
 		numbers = self.scores << self.rp
 		names = self.hash.keys << :Rounds
 		return Hash[names.zip(numbers)] 
@@ -547,14 +565,20 @@ class Match
     # * movimientos, se suman los puntos obtenidos a cada
     # * jugador, se aumenta el contador de rondas y se elige 
     # el proximo movimiento del jugador 1.
+
+	def game(m)
+		puts m
+		m2 = self.s2.next(m)
+		puts m2
+		self.scores = sum_array(self.scores, m.score(m2))
+		self.rp = self.rp + 1
+		m = self.s1.next(m2)
+	end
 	
 	def upto(n)
-		m1 = self.s1.next(self)
+		m1 = self.s1.next(nil)
 		while (self.scores[0] < n && self.scores[1] < n) do
-			m2 = self.s2.next(m1)
-			self.scores = sum_array(self.scores, m1.score(m2))
-			self.rp = self.rp + 1
-			m1 = self.s1.next(m2)
+			m1 = game(m1)
 		end
 		numbers = self.scores << self.rp
 		names = self.hash.keys << :Rounds

@@ -19,9 +19,17 @@ class Movement
 
 	# Muestra en pantalla el nombre de la clase
 	# del movimiento como un string
+	
 	def to_s
 		self.class.name
-	end		
+	end
+	
+	# Devuelve una excepción
+
+	def score m
+		raise "Error: Movement has no method score()"
+	end
+
 end
 
 # Esta clase representa el movimiento piedra
@@ -48,18 +56,18 @@ class Rock < Movement
 	end
 	
 	# Devuelve el resultado de enfrentar una movimiento
-    # piedra con un movimiento papel
-    #
-    # * resulta el movimiento papel (invocante) como ganador
+	# piedra con un movimiento papel
+	#
+	# * resulta el movimiento papel (invocante) como ganador
 
 	def scorePaper m
 		[1,0] 
 	end
 
 	# Devuelve el resultado de enfrentar una movimiento
-    # piedra con un movimiento tijeras
-    #
-    # * resulta el movimiento piedra como ganador
+	# piedra con un movimiento tijeras
+	#
+	# * resulta el movimiento piedra como ganador
 
 	def scoreScissors m
 		[0,1] 
@@ -72,37 +80,37 @@ end
 class Paper < Movement
 	
 	# Determina el resultado de enfrentar dos movimientos
-    # 
-    # * se pasa el control a la función que determina el
-    # * resultado de enfrentar el movimiento m con un
-    # * movimiento papel
+	# 
+	# * se pasa el control a la función que determina el
+	# * resultado de enfrentar el movimiento m con un
+	# * movimiento papel
 
 	def score m
 		m.scorePaper(self)
 	end
 
 	# Devuelve el resultado de enfrentar una movimiento
-    # papel con un movimientro piedra
-    #
-    # * resulta el movimiento papel como ganador
+	# papel con un movimientro piedra
+	#
+	# * resulta el movimiento papel como ganador
 
 	def scoreRock m
 		[0,1] 
 	end
 
 	# Devuelve el resultado de enfrentar una movimiento
-    # papel con otro movimientro papel
-    #
-    # * resulta en un empate
+	# papel con otro movimientro papel
+	#
+	# * resulta en un empate
 
 	def scorePaper m
 		[0,0]
 	end
 
 	# Devuelve el resultado de enfrentar una movimiento
-    # papel con un movimientro tijeras
-    #
-    # * resulta ganador el movimiento tijeras (invocante)
+	# papel con un movimientro tijeras
+	#
+	# * resulta ganador el movimiento tijeras (invocante)
 
 	def scoreScissors m
 		[1,0]
@@ -115,37 +123,37 @@ end
 class Scissors < Movement
 
 	# Determina el resultado de enfrentar dos movimientos
-    # 
-    # * se pasa el control a la función que determina el
-    # * resultado de enfrentar el movimiento m con un
-    # * movimiento tijeras
+	# 
+	# * se pasa el control a la función que determina el
+	# * resultado de enfrentar el movimiento m con un
+	# * movimiento tijeras
 
 	def score m
 		m.scoreScissors(self)
 	end
 
 	# Devuelve el resultado de enfrentar una movimiento
-    # tijeras con un movimientro piedra
-    #
-    # * resulta ganador el movimiento piedra (invocante)
+	# tijeras con un movimientro piedra
+	#
+	# * resulta ganador el movimiento piedra (invocante)
 
 	def scoreRock m
 		[1,0]
 	end
 
 	# Devuelve el resultado de enfrentar una movimiento
-    # tijeras con un movimientro papel
-    #
-    # * resulta ganador el movimiento tijeras
+	# tijeras con un movimientro papel
+	#
+	# * resulta ganador el movimiento tijeras
 
 	def scorePaper m
 		[0,1]
 	end
 
 	# Devuelve el resultado de enfrentar una movimiento
-    # tijeras con otro movimientro tijeras
-    #
-    # * resulta en un empate
+	# tijeras con otro movimientro tijeras
+	#
+	# * resulta en un empate
 
 	def scoreScissors m
 		[0,0]
@@ -226,7 +234,7 @@ class Uniform < Strategy
 
 	def next(m)
 		ran 	= self.gen.rand(self.list.size)
-		move = Object.const_get(self.list[ran]).new 
+		move 	= Object.const_get(self.list[ran]).new 
 	end
 
 	# Muestra en pantalla el nombre simbólico de la 
@@ -399,9 +407,9 @@ class Smart < Strategy
 	# contrincante
 
 	def initialize(r = 0, p = 0, s = 0)
-		@rs		= r
+		@rs	= r
 		@ss 	= s
-		@ps		= p
+		@ps	= p
 		@gen 	= Random.new(SEED)
 	end
 	
@@ -472,22 +480,6 @@ class Smart < Strategy
 
 end
 
-class Player
-
-	attr_reader :name, :s
-	attr_accessor :score, :move
-
-	def initialize (name, s)
-		@name	= name	# nombre del jugador
-		@s		= s		# estrategia del jugador
-		@score	= 0		# puntos del jugador
-	end
-	
-	def first_move
-		self.s.next(self)
-	end
-end
-
 # Esta clase representa el juego en sí
 # determinando el flujo de las partidas
 # bien sea por rondas o hasta un puntaje
@@ -514,9 +506,9 @@ class Match
 			raise "Error: Need just two players and strategies"
 		else
 			@hash 	= hash
-			@s1		= hash.values[0]
+			@s1	= hash.values[0]
 			@s2 	= hash.values[1]
-			@rp		= 0
+			@rp	= 0
 			@scores = [0,0]
 		end
 	end
@@ -536,9 +528,9 @@ class Match
 		m1 = self.s1.next(self)
 		n.times do
 			m2 = self.s2.next(m1)
-	        self.scores = sum_array(self.scores, m1.score(m2))
-     		self.rp = self.rp + 1
-      		m1 = self.s1.next(m2)
+			self.scores = sum_array(self.scores, m1.score(m2))
+			self.rp = self.rp + 1
+			m1 = self.s1.next(m2)
 		end
 		# imprime el resultado en pantalla
 		numbers = self.scores << self.rp
@@ -560,21 +552,21 @@ class Match
 		m1 = self.s1.next(self)
 		while (self.scores[0] < n && self.scores[1] < n) do
 			m2 = self.s2.next(m1)
-	        self.scores = sum_array(self.scores, m1.score(m2))
-        	self.rp = self.rp + 1
-        	m1 = self.s1.next(m2)
+			self.scores = sum_array(self.scores, m1.score(m2))
+			self.rp = self.rp + 1
+			m1 = self.s1.next(m2)
 		end
 		numbers = self.scores << self.rp
-        names = self.hash.keys << :Rounds
-        return Hash[names.zip(numbers)]
+		names = self.hash.keys << :Rounds
+		return Hash[names.zip(numbers)]
 	end
 	
 	# Devuelve la suma de dos arreglos de dos elementos
 
 	def sum_array(a1,a2)
-        a3_0 = a1[0] + a2[0]
-        a3_1 = a1[1] + a2[1]
-        return [a3_0, a3_1]
+		a3_0 = a1[0] + a2[0]
+		a3_1 = a1[1] + a2[1]
+		return [a3_0, a3_1]
     end
 
 	# Devuelve el juego al estado inicial
@@ -583,8 +575,8 @@ class Match
 	# * así como las partidas jugadas
 
 	def reset
-		self.scores = [0,0]
-		self.rp = 0
+		self.scores 	= [0,0]
+		self.rp 	= 0
 	end
 
 end

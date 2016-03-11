@@ -251,7 +251,7 @@ class LCR
 						children << nuevohijo
 					end	
 				end
-			end			
+			end	
 
 		end	
 		for j in self.right
@@ -329,7 +329,83 @@ class LCR
 	end
 
 end
+=======
+
+		end	
+		for j in self.right
+			auxizq = self.left.clone
+			auxder = self.right.clone
+			auxizq << j	
+			auxder.delete(j)
+			if self.where == "Right"
+				if not $invder.include? [auxizq,auxder] and not $finales.include? [auxizq,auxder]
+					if not $visitados.include? [auxizq,auxder] and not $iniciales.include? [auxizq,auxder]
+						$visitados << [auxizq,auxder]
+						nuevohijo = LCR.new({:where => "Left", :left => auxizq , :right => auxder})
+						children << nuevohijo
+					end	
+				end
+			else
+				if not $invizq.include? [auxizq,auxder]
+					if not $visitados.include? [auxizq,auxder] and not $iniciales.include? [auxizq,auxder]
+						$visitados << [auxizq,auxder]
+						nuevohijo = LCR.new({:where => "Right", :left => auxizq , :right => auxder})
+						children << nuevohijo
+					end	
+				end
+			end
+		end
+		self.children = children
+
+	end	
 
 
+	#metodo auxiliar recursivo de la funcion path
+	#verifica si secumple la condicion
+	#de ser asi retorna
+	#de caso recorre los hijos del nodo
+	def recursorPath(pila,nodo,predicate)
+		if nodo == nil
+			nil
+		else	
+			if (predicate.call nodo)
+				pila << nodo.hash
+				return pila
+			else
+				pila << nodo.hash
+				for i in self.children
+					return i.recursorPath(pila,i,predicate)
+				end
+			end		
+
+		end	
+	end
+
+
+	#funcion para recorer los hijos del arbol implicito
+	#de manera iterativa
+	def each(p)
+		for i in self.children
+			return p.call i
+		end
+	end
+
+	#funcion que resuleve el problema LCR
+	#generando los hijos de cada nodo
+	#y verificando si se lleg a una respuesta correcta
+	#para luego generar el camino
+	def solve
+		self.child_generator
+		if self.find(self,$proc)
+			return self.path(self,$proc)
+		else
+			for i in self.children
+				puts i
+				i.solve
+			end
+		end			
+	end
+
+end
 
 #estado = LCR.new({:where => "Left", :left => [:L,:C,:R], :right => []})

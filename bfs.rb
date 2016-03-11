@@ -316,11 +316,10 @@ class LCR
 	#para luego generar el camino
 	def solve
 		self.child_generator
-		if self.find(self,$proc)
+		if self.find(self,$proc) == true
 			return self.path(self,$proc)
 		else
 			for i in self.children
-				puts i
 				i.solve
 			end
 		end			
